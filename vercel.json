@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/get-app-file",
+      "destination": "https://github.com"
+    }
+  ]
+}
