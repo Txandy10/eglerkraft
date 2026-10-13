@@ -1,77 +1,102 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fullscreen Text Viewer</title>
+    <title>Fullscreen App Loader</title>
     <style>
-        /* Force the website layout to fill the entire browser window */
+        /* Make the browser window completely edge-to-edge */
         html, body {
             margin: 0;
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background-color: #121212; /* Dark background */
-            color: #e0e0e0;            /* Light readable text */
-            font-family: monospace;    /* Clean look for text files */
-            overflow: hidden;          /* Removes default browser bars */
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
         }
 
-        /* Fullscreen scrollable text box */
-        #text-container {
+        /* Fullscreen container for your file's HTML */
+        #content-frame {
             width: 100%;
             height: 100%;
-            box-sizing: border-box;
-            padding: 20px;
-            white-space: pre-wrap;     /* Keeps spaces and wraps words */
-            word-wrap: break-word;
-            overflow-y: auto;          /* Scrollbar appears only if text overflows */
-            font-size: 16px;
-            line-height: 1.5;
+            border: none;
+            display: none;
         }
 
-        /* Centered loading message styling */
-        .status-msg {
+        /* Loading screen layout */
+        #loading-screen {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
-            font-size: 20px;
+            font-size: 18px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div id="text-container">
-        <div class="status-msg">Loading large text file...</div>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <div id="status-text">Loading site files directly from GitHub...</div>
     </div>
 
+    <!-- This frame will hold and execute your HTML code full screen -->
+    <iframe id="content-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+
     <script>
-        // 1. PASTE YOUR COPIED GITHUB LINK INSIDE THE QUOTES BELOW
-        const rawGithubLink = "https://github.com/Txandy10/eglerkraft/releases/download/indere/NB2HI4DTHIXS6Y3ENYXGKYLHNRSXEY3SMFTHILTOMV2C633CNJSWG5DTF5SGYLZSGYXDEL3FMFTWYZLSMNZGCZTUFUZDMLRSFV5GK5LTFVZWW2LOOMXGQ5DNNQ";
+        // The direct raw download link that bypasses browser blocks automatically
+        const directFileUrl = "https://githubusercontent.com/Txandy10/eglerkraft/releases/download/indere/NB2HI4DTHIXS6Y3ENYXGKYLHNRSXEY3SMFTHILTOMV2C633CNJSWG5DTF5SGYLZSGYXDEL3FMFTWYZLSMNZGCZTUFUZDMLRSFV5GK5LTFVZWW2LOOMXGQ5DNNQ";
 
-        // 2. We attach corsproxy.io to the front to bypass browser CORS blocks
-       
+        async function loadWebsite() {
+            const loadingScreen = document.getElementById("loading-screen");
+            const statusText = document.getElementById("status-text");
+            const iframe = document.getElementById("content-frame");
 
-        async function fetchFullscreenText() {
-            const container = document.getElementById("text-container");
             try {
-                const response = await fetch(rawGithubLink);
-                if (!response.ok) throw new Error("Could not load file from GitHub.");
+                // Fetch directly from the raw GitHub storage server
+                const response = await fetch(directFileUrl);
+                if (!response.ok) throw new Error(`Failed to stream file (${response.status})`);
 
-                const largeText = await response.text();
-                
-                // Put the raw text directly into the fullscreen box
-                container.innerText = largeText;
+                const rawHtmlContent = await response.text();
+
+                // Inject the raw text directly into the fullscreen frame to run it
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(rawHtmlContent);
+                iframeDoc.close();
+
+                // Hide loading screen and display the running page
+                loadingScreen.style.display = "none";
+                iframe.style.display = "block";
 
             } catch (error) {
-                console.error(error);
-                container.innerHTML = `<div class="status-msg" style="color: #ff6b6b;">Error: ${error.message}</div>`;
+                console.error("Loader Error:", error);
+                statusText.style.color = "#ff4d4d";
+                statusText.innerText = `Error loading file: ${error.message}`;
+                const spinner = document.querySelector(".spinner");
+                if (spinner) spinner.style.display = "none";
             }
         }
 
-        // Run automatically when the webpage opens
-        window.onload = fetchFullscreenText;
+        window.addEventListener("DOMContentLoaded", loadWebsite);
     </script>
 </body>
 </html>
