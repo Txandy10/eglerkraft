@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fullscreen App Loader</title>
     <style>
-        /* Make the browser window completely edge-to-edge */
         html, body {
             margin: 0;
             padding: 0;
@@ -17,7 +16,6 @@
             overflow: hidden;
         }
 
-        /* Fullscreen container for your file's HTML */
         #content-frame {
             width: 100%;
             height: 100%;
@@ -25,7 +23,6 @@
             display: none;
         }
 
-        /* Loading screen layout */
         #loading-screen {
             display: flex;
             flex-direction: column;
@@ -54,15 +51,14 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div id="status-text">Loading site files directly from GitHub...</div>
+        <div id="status-text">Loading site files securely via Vercel...</div>
     </div>
 
-    <!-- This frame will hold and execute your HTML code full screen -->
     <iframe id="content-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
     <script>
-        // Updated to use the correct release asset storage domain to bypass browser blocks
-        const directFileUrl = "https://release-assets.githubusercontent.com/Txandy10/eglerkraft/releases/download/indere/NB2HI4DTHIXS6Y3ENYXGKYLHNRSXEY3SMFTHILTOMV2C633CNJSWG5DTF5SGYLZSGYXDEL3FMFTWYZLSMNZGCZTUFUZDMLRSFV5GK5LTFVZWW2LOOMXGQ5DNNQ";
+        // Points to our local Vercel server route created in vercel.json
+        const directFileUrl = "/api/get-app-file";
 
         async function loadWebsite() {
             const loadingScreen = document.getElementById("loading-screen");
@@ -70,19 +66,16 @@
             const iframe = document.getElementById("content-frame");
 
             try {
-                // Fetch directly from the raw GitHub storage server
                 const response = await fetch(directFileUrl);
-                if (!response.ok) throw new Error(`Failed to stream file (${response.status})`);
+                if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
 
                 const rawHtmlContent = await response.text();
 
-                // Inject the raw text directly into the fullscreen frame to run it
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                 iframeDoc.open();
                 iframeDoc.write(rawHtmlContent);
                 iframeDoc.close();
 
-                // Hide loading screen and display the running page
                 loadingScreen.style.display = "none";
                 iframe.style.display = "block";
 
