@@ -54,10 +54,10 @@
         <div id="status-text">Loading site files securely via Vercel...</div>
     </div>
 
-    <iframe id="content-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    <!-- Removed allow-same-origin for proper sandbox security enforcement -->
+    <iframe id="content-frame" sandbox="allow-scripts allow-forms"></iframe>
 
     <script>
-        // Points to our local Vercel server route created in vercel.json
         const directFileUrl = "/api/get-app-file";
 
         async function loadWebsite() {
@@ -71,10 +71,8 @@
 
                 const rawHtmlContent = await response.text();
 
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                iframeDoc.open();
-                iframeDoc.write(rawHtmlContent);
-                iframeDoc.close();
+                // Standard iframe injection fallback for secure sandbox contexts
+                iframe.src = "data:text/html;charset=utf-8," + encodeURIComponent(rawHtmlContent);
 
                 loadingScreen.style.display = "none";
                 iframe.style.display = "block";
