@@ -51,11 +51,11 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div id="status-text">Assembling application files (0/3)...</div>
+        <div id="status-text">Loading...</div>
     </div>
 
-    <!-- Secure sandboxed frame container -->
-    <iframe id="content-frame" sandbox="allow-scripts allow-forms"></iframe>
+    <!-- Added allow-pointer-lock to give the embedded code mouse locking capabilities -->
+    <iframe id="content-frame" sandbox="allow-scripts allow-forms allow-pointer-lock"></iframe>
 
     <script>
         const fileParts = [
@@ -70,9 +70,7 @@
             const iframe = document.getElementById("content-frame");
 
             try {
-                statusText.innerText = "Streaming component partitions...";
-                
-                // Fetch all 3 parts from Vercel's fast local deployment path
+                // Fetch all 3 parts from Vercel's fast local deployment path simultaneously
                 const fetchPromises = fileParts.map(part => 
                     fetch(part).then(res => {
                         if (!res.ok) throw new Error(`Failed to load: ${part}`);
@@ -80,15 +78,12 @@
                     })
                 );
 
-                statusText.innerText = "Stitching core systems together...";
                 const textChunks = await Promise.all(fetchPromises);
                 
                 // Combine the 3 parts back into the single large document string
                 const completeHtmlContent = textChunks.join("");
 
-                statusText.innerText = "Rendering viewport context...";
-
-                // Memory Optimization: Using srcdoc skips URL string parsing entirely
+                // Inject the unified data string directly into the secure execution frame
                 iframe.srcdoc = completeHtmlContent;
 
                 // Listen for the inner frame layout to finish rendering before showing it
