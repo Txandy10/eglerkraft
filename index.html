@@ -51,42 +51,58 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div id="status-text">Loading site files securely via Vercel...</div>
+        <div id="status-text">Assembling application files (0/3)...</div>
     </div>
 
-    <!-- Removed allow-same-origin for proper sandbox security enforcement -->
+    <!-- Secure sandboxed frame container -->
     <iframe id="content-frame" sandbox="allow-scripts allow-forms"></iframe>
 
     <script>
-        const directFileUrl = "/api/get-app-file";
+        // Updated to strictly reference your 3 file fragments
+        const fileParts = [
+            "part_1.txt",
+            "part_2.txt",
+            "part_3.txt"
+        ];
 
-        async function loadWebsite() {
+        async function chunkLoaderAssembly() {
             const loadingScreen = document.getElementById("loading-screen");
             const statusText = document.getElementById("status-text");
             const iframe = document.getElementById("content-frame");
 
             try {
-                const response = await fetch(directFileUrl);
-                if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
+                statusText.innerText = "Streaming component partitions...";
+                
+                // Fetch all 3 parts from Vercel's fast local deployment path
+                const fetchPromises = fileParts.map(part => 
+                    fetch(part).then(res => {
+                        if (!res.ok) throw new Error(`Failed to load: ${part}`);
+                        return res.text();
+                    })
+                );
 
-                const rawHtmlContent = await response.text();
+                statusText.innerText = "Stitching core systems together...";
+                const textChunks = await Promise.all(fetchPromises);
+                
+                // Combine the 3 parts back into the single large document string
+                const completeHtmlContent = textChunks.join("");
 
-                // Standard iframe injection fallback for secure sandbox contexts
-                iframe.src = "data:text/html;charset=utf-8," + encodeURIComponent(rawHtmlContent);
+                // Inject the unified data string directly into the secure execution frame
+                iframe.src = "data:text/html;charset=utf-8," + encodeURIComponent(completeHtmlContent);
 
                 loadingScreen.style.display = "none";
                 iframe.style.display = "block";
 
             } catch (error) {
-                console.error("Loader Error:", error);
+                console.error("Assembly System Error:", error);
                 statusText.style.color = "#ff4d4d";
-                statusText.innerText = `Error loading file: ${error.message}`;
+                statusText.innerText = `Error: ${error.message}`;
                 const spinner = document.querySelector(".spinner");
                 if (spinner) spinner.style.display = "none";
             }
         }
 
-        window.addEventListener("DOMContentLoaded", loadWebsite);
+        window.addEventListener("DOMContentLoaded", chunkLoaderAssembly);
     </script>
 </body>
 </html>
