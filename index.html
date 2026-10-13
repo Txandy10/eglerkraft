@@ -58,7 +58,6 @@
     <iframe id="content-frame" sandbox="allow-scripts allow-forms"></iframe>
 
     <script>
-        // Updated to strictly reference your 3 file fragments
         const fileParts = [
             "part_1.txt",
             "part_2.txt",
@@ -87,11 +86,16 @@
                 // Combine the 3 parts back into the single large document string
                 const completeHtmlContent = textChunks.join("");
 
-                // Inject the unified data string directly into the secure execution frame
-                iframe.src = "data:text/html;charset=utf-8," + encodeURIComponent(completeHtmlContent);
+                statusText.innerText = "Rendering viewport context...";
 
-                loadingScreen.style.display = "none";
-                iframe.style.display = "block";
+                // Memory Optimization: Using srcdoc skips URL string parsing entirely
+                iframe.srcdoc = completeHtmlContent;
+
+                // Listen for the inner frame layout to finish rendering before showing it
+                iframe.onload = function() {
+                    loadingScreen.style.display = "none";
+                    iframe.style.display = "block";
+                };
 
             } catch (error) {
                 console.error("Assembly System Error:", error);
